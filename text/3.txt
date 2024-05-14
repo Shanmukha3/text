@@ -1,0 +1,579 @@
+import pandas as pd
+import numpy as np
+
+data_fake=pd.read_csv('Fake (1).csv')
+data_true=pd.read_csv('True (1).csv')
+
+import numpy as np # linear algebra
+import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
+pd.set_option('display.max_columns', 50)
+pd.set_option('display.max_rows', 150)
+import os
+import gc
+gc.enable()
+import time
+import warnings
+warnings.filterwarnings("ignore")
+import matplotlib.pyplot as plt
+import seaborn as sns
+%matplotlib inline
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import cross_val_score
+from scipy.sparse import hstack
+from scipy import stats
+%matplotlib inline
+from datetime import timedelta
+import datetime as dt
+import matplotlib.pyplot as plt
+plt.rcParams['figure.figsize'] = [16, 10]
+from sklearn.model_selection import train_test_split
+from sklearn.decomposition import PCA
+from sklearn.cluster import MiniBatchKMeans
+import warnings
+warnings.filterwarnings('ignore')
+import urllib        #for url stuff
+
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction import text
+from IPython.display import display
+from tqdm import tqdm
+from collections import Counter
+import ast
+
+
+from sklearn.feature_extraction.text import CountVectorizer
+from textblob import TextBlob
+import scipy.stats as stats
+
+import seaborn as sns
+from sklearn.manifold import TSNE
+from sklearn.decomposition import PCA, TruncatedSVD
+import matplotlib.patches as mpatches
+import time
+
+import seaborn as sns #for making plots
+import matplotlib.pyplot as plt # for plotting
+import os  # for os commands
+
+import gensim
+from gensim import corpora, models, similarities
+import logging
+import tempfile
+from nltk.corpus import stopwords
+from string import punctuation
+from collections import OrderedDict
+
+from sklearn.decomposition import TruncatedSVD
+from sklearn.decomposition import LatentDirichletAllocation
+from sklearn.manifold import TSNE
+
+
+from bokeh.plotting import figure, output_file, show
+from bokeh.models import Label
+from bokeh.io import output_notebook
+output_notebook()
+
+data_fake['class']=0
+data_true['class']=1
+
+data_merge=pd.concat([data_fake,data_true],axis=0)
+data_merge.shape
+
+data_merge.isnull().sum()
+
+coloumns=['text','class','date']
+data=data_merge[coloumns]
+data.head()
+
+def worddrop(text) :
+  text = text. lower()
+  text = re. sub('\[.*?\]','', text)
+  text = re. sub("\\W", " ", text)
+  text = re. sub('https?://\S+|www. \S+','', text)
+  text = re. sub('<.*?›+','',text)
+  text=re.sub('[%s]' % re.escape(string.punctuation),'',text)
+  text=re.sub('\w*\d\w*','',text)
+  return text
+
+import re
+import string
+
+
+data_copy = data.copy()
+
+data_copy['text'] = data_copy['text'].apply(worddrop)
+
+x=data_copy['text']
+y=data_copy['class']
+
+from sklearn.model_selection import train_test_split
+x_train,x_test,y_train,y_test=train_test_split(x,y,test_size=0.2)
+
+from sklearn.feature_extraction.text import TfidfVectorizer
+
+tfidf = TfidfVectorizer()
+xv_train1 = tfidf.fit_transform(x_train)
+xv_test1 = tfidf.transform(x_test)
+
+from sklearn.linear_model import LogisticRegression
+
+LR=LogisticRegression()
+LR.fit(xv_train1,y_train)
+
+pred_lr1=LR.predict(xv_test1)
+
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.metrics import confusion_matrix
+
+# Example true labels and predicted labels
+true_labels = np.array(y_test)
+predicted_labels = np.array(pred_lr1)
+
+# Compute confusion matrix
+cm = confusion_matrix(true_labels, predicted_labels)
+
+# Plot confusion matrix
+plt.figure(figsize=(8, 6))
+sns.heatmap(cm, annot=True, cmap='Blues', fmt='g', xticklabels=['Predicted 0', 'Predicted 1'],
+            yticklabels=['Actual 0', 'Actual 1'])
+plt.xlabel('Predicted label')
+plt.ylabel('True label')
+plt.title('Confusion Matrix')
+plt.show()
+
+
+from sklearn.metrics import roc_curve, roc_auc_score
+
+# Get predicted probabilities for the positive class (class 1)
+predicted_probabilities = pred_lr1
+
+# Calculate False Positive Rate (fpr) and True Positive Rate (tpr)
+fpr, tpr, thresholds = roc_curve(true_labels, predicted_probabilities)
+
+# Calculate Area Under the ROC Curve (AUC)
+auc = roc_auc_score(true_labels, predicted_probabilities)
+
+# Plot ROC curve
+plt.figure(figsize=(8, 6))
+plt.plot(fpr, tpr, color='blue', lw=2, label='ROC curve (AUC = {:.2f})'.format(auc))
+plt.plot([0, 1], [0, 1], color='black', lw=1, linestyle='--')
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 1.05])
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('ROC Curve')
+plt.legend(loc="lower right")
+plt.grid(True)
+plt.show()
+
+
+accuracy = LR.score(xv_test1, y_test)
+print("Accuracy on test data:", accuracy)
+
+from sklearn.feature_extraction.text import CountVectorizer
+
+count_vectorizer = CountVectorizer(ngram_range=(1, 3))
+
+
+xv_train2 = count_vectorizer.fit_transform(x_train)
+xv_test2 = count_vectorizer.transform(x_test)
+
+from sklearn.linear_model import LogisticRegression
+
+LR = LogisticRegression()
+LR.fit(xv_train2, y_train)
+
+pred_lr2 = LR.predict(xv_test2)
+accuracy = LR.score(xv_test2, y_test)
+print("Accuracy on test data:", accuracy)
+
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.decomposition import LatentDirichletAllocation
+
+# Create a CountVectorizer instance and fit it on the training data
+vectorizer = CountVectorizer()
+X = vectorizer.fit_transform(x_train)
+
+# Transform the testing data using the same CountVectorizer instance
+Y= vectorizer.transform(x_test)
+
+# Apply LDA on the training data
+lda = LatentDirichletAllocation(n_components=2, random_state=42)
+xv_train3 = lda.fit_transform(X)
+
+# Print the shape of the transformed data
+print("Transformed Data shape:", xv_train3.shape)
+
+# Transform the testing data using the trained LDA model
+xv_test3 = lda.transform(Y)
+
+
+from sklearn.linear_model import LogisticRegression
+
+LR = LogisticRegression()
+LR.fit(xv_train3, y_train)
+
+pred_lr3 = LR.predict(xv_test3)
+accuracy = LR.score(xv_test3, y_test)
+print("Accuracy on test data:", accuracy)
+-----------------------------------------------------------------------------------------------------------
+
+
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LinearRegression
+from sklearn.svm import SVR
+from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
+from sklearn.cluster import KMeans
+from sklearn.neighbors import KNeighborsRegressor, KNeighborsClassifier
+from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
+from sklearn.ensemble import VotingRegressor, VotingClassifier
+from sklearn.metrics import accuracy_score, mean_squared_error
+from sklearn.metrics import silhouette_score
+from sklearn.model_selection import train_test_split as surprise_train_test_split
+# Load CSV file into a DataFrame
+filename = 'data3.csv'
+data = pd.read_csv(filename)
+# Preprocessing
+# Fill Null Values
+data.fillna(data.mean(), inplace=True)
+# Split data into features (X) and target (y)
+X = data.drop(columns=['target_column'])
+y = data['target_column']
+# Standard Scaling
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+# Split data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
+# Linear Regression
+lr_model = LinearRegression()
+lr_model.fit(X_train, y_train)
+lr_predictions = lr_model.predict(X_test)
+lr_rmse = mean_squared_error(y_test, lr_predictions, squared=False)
+print("Linear Regression RMSE:", lr_rmse)
+# Support Vector Machine (SVM)
+svm_model = SVR()
+svm_model.fit(X_train, y_train)
+svm_predictions = svm_model.predict(X_test)
+svm_rmse = mean_squared_error(y_test, svm_predictions, squared=False)
+print("SVM RMSE:", svm_rmse)
+# Decision Tree
+dt_model = DecisionTreeRegressor()
+dt_model.fit(X_train, y_train)
+dt_predictions = dt_model.predict(X_test)
+dt_rmse = mean_squared_error(y_test, dt_predictions, squared=False)
+print("Decision Tree RMSE:", dt_rmse)
+# K-Means Clustering
+kmeans_model = KMeans(n_clusters=3)
+kmeans_model.fit(X_train)
+silhouette_score_kmeans = silhouette_score(X_train, kmeans_model.labels_)
+print("K-Means Silhouette Score:", silhouette_score_kmeans)
+# K-Nearest Neighbors (KNN) for Regression
+knn_model = KNeighborsRegressor()
+knn_model.fit(X_train, y_train)
+knn_predictions = knn_model.predict(X_test)
+knn_rmse = mean_squared_error(y_test, knn_predictions, squared=False)
+print("KNN Regression RMSE:", knn_rmse)
+# K-Nearest Neighbors (KNN) for Classification
+knn_classifier_model = KNeighborsClassifier()
+knn_classifier_model.fit(X_train, y_train)
+knn_classifier_predictions = knn_classifier_model.predict(X_test)
+knn_classifier_accuracy = accuracy_score(y_test, knn_classifier_predictions)
+print("KNN Classifier Accuracy:", knn_classifier_accuracy)
+# Random Forest for Regression
+rf_model = RandomForestRegressor()
+rf_model.fit(X_train, y_train)
+rf_predictions = rf_model.predict(X_test)
+rf_rmse = mean_squared_error(y_test, rf_predictions, squared=False)
+print("Random Forest Regression RMSE:", rf_rmse)
+# Random Forest for Classification
+rf_classifier_model = RandomForestClassifier()
+rf_classifier_model.fit(X_train, y_train)
+rf_classifier_predictions = rf_classifier_model.predict(X_test)
+rf_classifier_accuracy = accuracy_score(y_test, rf_classifier_predictions)
+print("Random Forest Classifier Accuracy:", rf_classifier_accuracy)
+# Ensemble Models (Voting Regressor)
+ensemble_model = VotingRegressor([('lr', lr_model), ('svm', svm_model), ('rf', rf_model)])
+ensemble_model.fit(X_train, y_train)
+ensemble_predictions = ensemble_model.predict(X_test)
+ensemble_rmse = mean_squared_error(y_test, ensemble_predictions, squared=False)
+print("Ensemble Model RMSE:", ensemble_rmse)
+# Ensemble Models (Voting Classifier)
+ensemble_classifier_model = VotingClassifier([('knn', knn_classifier_model), ('rf', 
+rf_classifier_model)])
+ensemble_classifier_model.fit(X_train, y_train)
+ensemble_classifier_predictions = ensemble_classifier_model.predict(X_test)
+ensemble_classifier_accuracy = accuracy_score(y_test, ensemble_classifier_predictions)
+print("Ensemble Classifier Accuracy:", ensemble_classifier_accuracy)
+# Collaborative Filtering (Clustering)
+# Load data for collaborative filtering
+reader = Reader(rating_scale=(1, 5))
+surprise_data = Dataset.load_from_df(data[['user_id', 'item_id', 'rating']], reader)
+# Split the data into training and testing sets
+surprise_trainset, surprise_testset = surprise_train_test_split(surprise_data, test_size=0.2, 
+random_state=42)
+# KNN Collaborative Filtering
+knn_collab_model = KNNBasic()
+knn_collab_model.fit(surprise_trainset)
+knn_collab_predictions = knn_collab_model.test(surprise_testset)
+knn_collab_rmse = accuracy.rmse(knn_collab_predictions)
+print("KNN Collaborative Filtering RMSE:", knn_collab_rmse)
+# KNN Collaborative Filtering with Mean Centering
+knn_mean_collab_model = KNNWithMeans()
+knn_mean_collab_model.fit(surprise_trainset)
+knn_mean_collab_predictions = knn_mean_collab_model.test(surprise_testset)
+knn_mean_collab_rmse = accuracy.rmse(knn_mean_collab_predictions)
+print("KNN Collaborative Filtering with Mean Centering RMSE:", knn_mean_collab_rmse)
+# KNN Collaborative Filtering with Z-score Normalization
+knn_zscore_collab_model = KNNWithZScore()
+knn_zscore_collab_model.fit(surprise_trainset)
+knn_zscore_collab_predictions = knn_zscore_collab_model.test(surprise_testset)
+knn_zscore_collab_rmse = accuracy.rmse(knn_zscore_collab_predictions)
+print("KNN Collaborative Filtering with Z-score Normalization RMSE:", knn_zscore_collab_rmse)
+# KNN Collaborative Filtering with Baseline Prediction
+knn_baseline_collab_model = KNNBaseline()
+knn_baseline_collab_model.fit(surprise_trainset)
+knn_baseline_collab_predictions = knn_baseline_collab_model.test(surprise_testset)
+knn_baseline_collab_rmse = accuracy.rmse(knn_baseline_collab_predictions)
+print("KNN Collaborative Filtering with Baseline Prediction RMSE:", knn_baseline_collab_rmse)
+# Metrics
+lr_accuracy = accuracy_score(y_test, lr_predictions)
+svm_accuracy = accuracy_score(y_test, svm_predictions)
+dt_accuracy = accuracy_score(y_test, dt_predictions)
+kmeans_accuracy = silhouette_score_kmeans
+knn_accuracy = accuracy_score(y_test, knn_predictions)
+rf_accuracy = accuracy_score(y_test, rf_predictions)
+ensemble_accuracy = accuracy_score(y_test, ensemble_classifier_predictions)
+knn_collab_rmse = accuracy.rmse(knn_collab_predictions)
+# Visualization
+# Scatter plot
+plt.scatter(X_train['feature1'], X_train['feature2'], c=kmeans_model.labels_, cmap='viridis')
+plt.scatter(kmeans_model.cluster_centers_[:, 0], kmeans_model.cluster_centers_[:, 1], c='red', 
+marker='x', s=200, label='Cluster Centers')
+plt.xlabel('Feature 1')
+plt.ylabel('Feature 2')
+plt.title('Scatter Plot for Clustering')
+plt.legend()
+plt.show()
+# Confusion Matrix
+cm_viz = ConfusionMatrix(ensemble_classifier_model, labels=np.unique(y))
+cm_viz.score(X_test, y_test)
+cm_viz.poof()
+# ROC Curve
+y_prob = ensemble_classifier_model.predict_proba(X_test)[:, 1]
+fpr, tpr, thresholds = roc_curve(y_test, y_prob)
+plt.plot(fpr, tpr, label='ROC Curve')
+plt.plot([0, 1], [0, 1], linestyle='--', color='gray')
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('ROC Curve')
+plt.legend()
+plt.show()
+
+
+---------------------------------------------------------------------------
+
+from sklearn.preprocessing import StandardScaler
+import numpy as np
+
+# Sample data
+data = np.array([[1, 2],
+                 [3, 4],
+                 [5, 6]])
+
+# Initialize StandardScaler
+scaler = StandardScaler()
+
+# Fit the scaler to the data and transform the data
+scaled_data = scaler.fit_transform(data)
+
+print("Original data:\n", data)
+print("\nScaled data (z-score normalization):\n", scaled_data)
+
+
+
+
+from sklearn.preprocessing import MinMaxScaler
+import numpy as np
+
+# Sample data
+data = np.array([[1, 2],
+                 [3, 4],
+                 [5, 6]])
+
+# Initialize MinMaxScaler
+scaler = MinMaxScaler()
+
+# Fit the scaler to the data and transform the data
+scaled_data = scaler.fit_transform(data)
+
+print("Original data:\n", data)
+print("\nScaled data (min-max scaling):\n", scaled_data)
+
+
+from sklearn.preprocessing import LabelEncoder
+
+# Sample categorical data
+labels = ['cat', 'dog', 'mouse', 'cat', 'dog']
+
+# Initialize LabelEncoder
+label_encoder = LabelEncoder()
+
+# Fit the encoder to the data and transform the labels
+encoded_labels = label_encoder.fit_transform(labels)
+
+print("Original labels:", labels)
+print("Encoded labels:", encoded_labels)
+
+# You can also inverse transform the encoded labels back to the original labels
+original_labels = label_encoder.inverse_transform(encoded_labels)
+print("Decoded labels:", original_labels)
+
+
+
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.datasets import load_iris
+
+# Load iris dataset
+iris = load_iris()
+X = iris.data
+y = iris.target
+
+# Initialize LDA
+lda = LinearDiscriminantAnalysis(n_components=2)
+
+# Fit the LDA model to the data
+X_lda = lda.fit_transform(X, y)
+
+# Print the transformed data
+print("Transformed data shape:", X_lda.shape)
+print("Transformed data:\n", X_lda)
+
+
+
+from sklearn.decomposition import PCA
+from sklearn.datasets import load_iris
+
+# Load iris dataset
+iris = load_iris()
+X = iris.data
+
+# Initialize PCA
+pca = PCA(n_components=2)
+
+# Fit the PCA model to the data
+X_pca = pca.fit_transform(X)
+
+# Print the transformed data
+print("Transformed data shape:", X_pca.shape)
+print("Transformed data:\n", X_pca)
+
+
+
+from sklearn.datasets import load_iris
+from sklearn.feature_selection import SelectKBest, chi2
+import numpy as np
+
+# Load iris dataset
+iris = load_iris()
+X = iris.data
+y = iris.target
+
+# Initialize SelectKBest
+k = 2  # Select top 2 features
+selector = SelectKBest(score_func=chi2, k=k)
+
+# Fit selector to data
+X_new = selector.fit_transform(X, y)
+
+# Get selected features
+selected_features = np.array(iris.feature_names)[selector.get_support()]
+
+# Print selected features
+print("Selected features:", selected_features)
+print("Transformed data shape:", X_new.shape)
+print("Transformed data:\n", X_new)
+
+
+-------------------------------–------
+
+from mlxtend.frequent_patterns import apriori
+from mlxtend.frequent_patterns import association_rules
+import pandas as pd
+
+# Sample transaction dataset
+dataset = [
+    ['milk', 'bread', 'butter'],
+    ['milk', 'bread'],
+    ['milk', 'diapers'],
+    ['bread', 'butter'],
+    ['bread', 'diapers']
+]
+
+# Convert the dataset into a pandas DataFrame
+df = pd.DataFrame(dataset)
+
+# Apply one-hot encoding to the dataset
+df_encoded = pd.get_dummies(df.apply(pd.Series).stack()).sum(level=0)
+
+# Find frequent itemsets using Apriori algorithm
+frequent_itemsets = apriori(df_encoded, min_support=0.5, use_colnames=True)
+
+# Generate association rules
+rules = association_rules(frequent_itemsets, metric='confidence', min_threshold=0.7)
+
+# Print frequent itemsets and association rules
+print("Frequent Itemsets:\n", frequent_itemsets)
+print("\nAssociation Rules:\n", rules) 
+
+
+
+
+import pyfpgrowth
+
+# Sample transaction dataset
+transactions = [
+    ['milk', 'bread', 'butter'],
+    ['milk', 'bread'],
+    ['milk', 'diapers'],
+    ['bread', 'butter'],
+    ['bread', 'diapers']
+]
+
+# Find frequent itemsets using FP-Growth algorithm
+patterns = pyfpgrowth.find_frequent_patterns(transactions, 2)
+
+# Generate association rules from the frequent itemsets
+rules = pyfpgrowth.generate_association_rules(patterns, 0.7)
+
+# Print frequent itemsets and association rules
+print("Frequent Itemsets:\n", patterns)
+print("\nAssociation Rules:\n", rules)
+
+
+
+import numpy as np
+
+# Sample data
+data = np.random.randint(1, 100, 20)
+
+# Define the number of bins
+num_bins = 5
+
+# Calculate bin width
+bin_width = (max(data) - min(data)) / num_bins
+
+# Calculate bin edges
+bin_edges = [min(data) + i * bin_width for i in range(num_bins + 1)]
+
+# Perform binning
+binned_data = np.digitize(data, bins=bin_edges)
+
+# Print the binned data
+print("Original data:\n", data)
+print("\nBinned data:\n", binned_data)
+print("\nBin Edges:\n", bin_edges)

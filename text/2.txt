@@ -1,0 +1,200 @@
+from sklearn.preprocessing import StandardScaler
+import numpy as np
+
+# Sample data
+data = np.array([[1, 2],
+                 [3, 4],
+                 [5, 6]])
+
+# Initialize StandardScaler
+scaler = StandardScaler()
+
+# Fit the scaler to the data and transform the data
+scaled_data = scaler.fit_transform(data)
+
+print("Original data:\n", data)
+print("\nScaled data (z-score normalization):\n", scaled_data)
+
+
+
+
+from sklearn.preprocessing import MinMaxScaler
+import numpy as np
+
+# Sample data
+data = np.array([[1, 2],
+                 [3, 4],
+                 [5, 6]])
+
+# Initialize MinMaxScaler
+scaler = MinMaxScaler()
+
+# Fit the scaler to the data and transform the data
+scaled_data = scaler.fit_transform(data)
+
+print("Original data:\n", data)
+print("\nScaled data (min-max scaling):\n", scaled_data)
+
+
+from sklearn.preprocessing import LabelEncoder
+
+# Sample categorical data
+labels = ['cat', 'dog', 'mouse', 'cat', 'dog']
+
+# Initialize LabelEncoder
+label_encoder = LabelEncoder()
+
+# Fit the encoder to the data and transform the labels
+encoded_labels = label_encoder.fit_transform(labels)
+
+print("Original labels:", labels)
+print("Encoded labels:", encoded_labels)
+
+# You can also inverse transform the encoded labels back to the original labels
+original_labels = label_encoder.inverse_transform(encoded_labels)
+print("Decoded labels:", original_labels)
+
+
+
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.datasets import load_iris
+
+# Load iris dataset
+iris = load_iris()
+X = iris.data
+y = iris.target
+
+# Initialize LDA
+lda = LinearDiscriminantAnalysis(n_components=2)
+
+# Fit the LDA model to the data
+X_lda = lda.fit_transform(X, y)
+
+# Print the transformed data
+print("Transformed data shape:", X_lda.shape)
+print("Transformed data:\n", X_lda)
+
+
+
+from sklearn.decomposition import PCA
+from sklearn.datasets import load_iris
+
+# Load iris dataset
+iris = load_iris()
+X = iris.data
+
+# Initialize PCA
+pca = PCA(n_components=2)
+
+# Fit the PCA model to the data
+X_pca = pca.fit_transform(X)
+
+# Print the transformed data
+print("Transformed data shape:", X_pca.shape)
+print("Transformed data:\n", X_pca)
+
+
+
+from sklearn.datasets import load_iris
+from sklearn.feature_selection import SelectKBest, chi2
+import numpy as np
+
+# Load iris dataset
+iris = load_iris()
+X = iris.data
+y = iris.target
+
+# Initialize SelectKBest
+k = 2  # Select top 2 features
+selector = SelectKBest(score_func=chi2, k=k)
+
+# Fit selector to data
+X_new = selector.fit_transform(X, y)
+
+# Get selected features
+selected_features = np.array(iris.feature_names)[selector.get_support()]
+
+# Print selected features
+print("Selected features:", selected_features)
+print("Transformed data shape:", X_new.shape)
+print("Transformed data:\n", X_new)
+
+
+-------------------------------–------
+
+from mlxtend.frequent_patterns import apriori
+from mlxtend.frequent_patterns import association_rules
+import pandas as pd
+
+# Sample transaction dataset
+dataset = [
+    ['milk', 'bread', 'butter'],
+    ['milk', 'bread'],
+    ['milk', 'diapers'],
+    ['bread', 'butter'],
+    ['bread', 'diapers']
+]
+
+# Convert the dataset into a pandas DataFrame
+df = pd.DataFrame(dataset)
+
+# Apply one-hot encoding to the dataset
+df_encoded = pd.get_dummies(df.apply(pd.Series).stack()).sum(level=0)
+
+# Find frequent itemsets using Apriori algorithm
+frequent_itemsets = apriori(df_encoded, min_support=0.5, use_colnames=True)
+
+# Generate association rules
+rules = association_rules(frequent_itemsets, metric='confidence', min_threshold=0.7)
+
+# Print frequent itemsets and association rules
+print("Frequent Itemsets:\n", frequent_itemsets)
+print("\nAssociation Rules:\n", rules) 
+
+
+
+
+import pyfpgrowth
+
+# Sample transaction dataset
+transactions = [
+    ['milk', 'bread', 'butter'],
+    ['milk', 'bread'],
+    ['milk', 'diapers'],
+    ['bread', 'butter'],
+    ['bread', 'diapers']
+]
+
+# Find frequent itemsets using FP-Growth algorithm
+patterns = pyfpgrowth.find_frequent_patterns(transactions, 2)
+
+# Generate association rules from the frequent itemsets
+rules = pyfpgrowth.generate_association_rules(patterns, 0.7)
+
+# Print frequent itemsets and association rules
+print("Frequent Itemsets:\n", patterns)
+print("\nAssociation Rules:\n", rules)
+
+
+
+import numpy as np
+
+# Sample data
+data = np.random.randint(1, 100, 20)
+
+# Define the number of bins
+num_bins = 5
+
+# Calculate bin width
+bin_width = (max(data) - min(data)) / num_bins
+
+# Calculate bin edges
+bin_edges = [min(data) + i * bin_width for i in range(num_bins + 1)]
+
+# Perform binning
+binned_data = np.digitize(data, bins=bin_edges)
+
+# Print the binned data
+print("Original data:\n", data)
+print("\nBinned data:\n", binned_data)
+print("\nBin Edges:\n", bin_edges)
